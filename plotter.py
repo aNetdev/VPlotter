@@ -76,6 +76,7 @@ class Plotter:
             "getThreadLength Original X=%s Y=%s L=%s R=%s", x, y, left, right)
         
         # account for the current postion
+        #TODO: i think using steps insted of the length would be more accurate. steps will more accurately represent the current length\situation
         left = left - self.currentLeft
         right = right - self.currentRight
 
