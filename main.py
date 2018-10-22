@@ -24,7 +24,7 @@ def getLogger():
 logger = getLogger()
 logger.info("Starting")
 
-# Max dimentions xmin 100, x max250 ymin= 150, ymax 500 
+# Max dimensions xmin 100, x max250 ymin= 150, ymax 500 
 
 # draw a line
 myPlotter = Plotter(100, 80)
