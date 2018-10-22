@@ -1,5 +1,5 @@
 import logging
-from plotter import Plotter
+from plotter import Plotter, PenDirection
 
 
 def getLogger():
@@ -24,21 +24,22 @@ def getLogger():
 logger = getLogger()
 logger.info("Starting")
 
+# Max dimentions xmin 100, x max250 ymin= 150, ymax 500 
 
 # draw a line
-myPlotter = Plotter(50, 50)
-myPlotter.init(True)
-myPlotter.moveTo(100, 200, False) # go to initial postion
-myPlotter.moveTo(100, 400, False) #|
-
-myPlotter.moveTo(400, 400, False) #|__
-
-myPlotter.moveTo(400, 200, False) #|__|
-
+myPlotter = Plotter(100, 80)
+myPlotter.init(False)
+myPlotter.moveTo(100, 150, PenDirection.Up) # go to initial postion
+input("Press Enter to continue...")
+myPlotter.moveTo(100, 500, PenDirection.Down) #|
+input("Press Enter to continue...")
+myPlotter.moveTo(250, 500, PenDirection.Down) #|__
+input("Press Enter to continue...")
+myPlotter.moveTo(250, 150, PenDirection.Down) #|__|
+input("Press Enter to continue...")
                                   # __
-myPlotter.moveTo(200, 200, False) #|__|
-myPlotter.finalize()
+myPlotter.moveTo(100, 150, PenDirection.Down) #|__|
 # once done move back to the original position
+input("Press Enter to continue...")
 myPlotter.finalize()
 logger.info("Done")
-

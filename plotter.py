@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 import math
 import time
 
@@ -25,7 +26,7 @@ class Plotter:
     penPin = 12  # servo pin PWM
     lastPenPos =False
 
-    pwm = None
+    #pwm = None
     isDebugMode=False
     def __init__(self, orgX, orgY ):
         self.currentLeft = 0
@@ -55,8 +56,11 @@ class Plotter:
         GPIO.setup(self.rightMotorDirPin, GPIO.OUT)
         
         GPIO.setup(self.penPin, GPIO.OUT)
-        pwm = GPIO.PWM(self.penPin, 50)
-        pwm.start(0)
+        self.pwm = GPIO.PWM(self.penPin, 50)
+        self.pwm.start(0)
+        
+        #make sure the pen is up
+        self.movePen(PenDirection.Up)
         self.isDebugMode =debug
 
     def getThreadLength(self, x, y):
@@ -100,8 +104,8 @@ class Plotter:
         return {'left': leftSteps, 'right': rightSteps}
 
     def doMove(self, leftSteps, rightSteps, penDown):
-        leftDir = 0 if leftSteps >= 0 else 1  # if positive move forward
-        rightDir = 0 if rightSteps >= 0 else 1  # if positive move forward
+        leftDir = CordDirection.Forward if leftSteps >= 0 else CordDirection.Backward  # if positive move forward
+        rightDir = CordDirection.Forward if rightSteps >= 0 else CordDirection.Backward  # if positive move forward
 
         # now that we have the direction we can focus just on the absolute values
         leftSteps = abs(leftSteps)
@@ -113,8 +117,8 @@ class Plotter:
         maxSteps = leftSteps if leftSteps > rightSteps else rightSteps
 
         logger.info("doMove LS=%s RS=%s", leftSteps, rightSteps)
-        logger.info("doMove LD=%s RD=%s", "up" if leftDir ==
-                          0 else "down", "up" if rightDir == 0 else "down")
+        logger.info("doMove LD=%s RD=%s", "up" if leftDir == CordDirection.Forward
+                           else "down", "up" if rightDir == CordDirection.Forward else "down")
         logger.info("doMove MaxSteps=%s", maxSteps)
         logger.info("doMove penDown=%s", penDown)
         
@@ -133,7 +137,7 @@ class Plotter:
     def makeOneStep(self, motorPin, dirPin, dir):
         logger.debug("makeOneStep MotorPin=%s DirPin=%s Dir=%s", motorPin, dirPin, dir)
         # set direction
-        GPIO.output(dirPin, GPIO.LOW if dir == 0 else GPIO.HIGH)
+        GPIO.output(dirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
         GPIO.output(motorPin, GPIO.HIGH)
         if not self.isDebugMode:
             time.sleep(0.01)
@@ -151,20 +155,20 @@ class Plotter:
        
      
      
-    def movePen(self, up):
-        if self.lastPenPos != up :
+    def movePen(self, dir):
+        if self.lastPenPos != dir :
             #true = down 180 degree
             #false = up 0 degree
-            angle = 5 if up  else 175
+            angle = 5 if dir == PenDirection.Down  else 170
             duty = float(angle) / 18 + 2
             self.pwm.ChangeDutyCycle(duty)     
             time.sleep(0.01)
-            self.lastPenPos =up
+            self.lastPenPos =dir
 
     def moveRight(self, dir, steps):
         logger.info("moving right %s steps", steps)
         # set direction
-        GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir == 0 else GPIO.HIGH)
+        GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
             GPIO.output(self.rightMotorPin, GPIO.HIGH)
             time.sleep(0.01)
@@ -175,7 +179,7 @@ class Plotter:
     def moveLeft(self, dir, steps):
         logger.info("moving Left %s steps", steps)
         # set direction
-        GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir == 0 else GPIO.HIGH)
+        GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
             GPIO.output(self.leftMotorPin, GPIO.HIGH)
             if not self.isDebugMode:  
@@ -185,5 +189,14 @@ class Plotter:
         logger.info("done")
 
     def finalize(self):
+        self.movePen(PenDirection.Up)
         self.moveTo(self.orgX, self.orgY, False)
         GPIO.cleanup()
+
+class CordDirection(Enum):
+    Forward =0
+    Backward=1
+
+class PenDirection(Enum):
+    Up=1
+    Down=0
