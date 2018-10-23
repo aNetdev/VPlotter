@@ -1,3 +1,11 @@
-# mypy
-.mypy_cache/
+#cache
+__pycache__/
 
+#logs
+*.log
+
+# Environments
+venv/
+
+#vscode
+.vscode/

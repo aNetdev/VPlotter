@@ -13,7 +13,7 @@ logger = logging.getLogger("plotterLog")
 class Plotter:
 
     B =350   # mm
-    stepPerRot = 2038  # steps in one rotation
+    stepPerRot = 2048  # steps in one rotation
     sd = 79  # spool diameter 2piR mm
    
 
