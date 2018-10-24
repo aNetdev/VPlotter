@@ -1,5 +1,6 @@
 import logging
 from plotter import Plotter, PenDirection
+from datetime import datetime
 
 
 def getLogger():
@@ -8,7 +9,8 @@ def getLogger():
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-    file_handler = logging.FileHandler("plotterLog.log")
+    file_handler = logging.FileHandler(
+        "plotterLog{date}.log".format(date=datetime.now().strftime('%Y%m%d')))
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
 
@@ -24,21 +26,21 @@ def getLogger():
 logger = getLogger()
 logger.info("Starting")
 
-# Max dimensions xmin 100, x max250 ymin= 150, ymax 500 
+# Max dimensions xmin 100, x max250 ymin= 150, ymax 500
 
 # draw a line
 myPlotter = Plotter(100, 80)
 myPlotter.init(False)
-myPlotter.moveTo(100, 150, PenDirection.Up) # go to initial postion
+myPlotter.moveTo(100, 150, PenDirection.Up)  # go to initial postion
 input("Press Enter to continue...")
-myPlotter.moveTo(100, 500, PenDirection.Down) #|
+myPlotter.moveTo(100, 500, PenDirection.Down)  # |
 input("Press Enter to continue...")
-myPlotter.moveTo(250, 500, PenDirection.Down) #|__
+myPlotter.moveTo(250, 500, PenDirection.Down)  # |__
 input("Press Enter to continue...")
-myPlotter.moveTo(250, 150, PenDirection.Down) #|__|
+myPlotter.moveTo(250, 150, PenDirection.Down)  # |__|
 input("Press Enter to continue...")
-                                  # __
-myPlotter.moveTo(100, 150, PenDirection.Down) #|__|
+# __
+myPlotter.moveTo(100, 150, PenDirection.Down)  # |__|
 # once done move back to the original position
 input("Press Enter to continue...")
 myPlotter.finalize()
