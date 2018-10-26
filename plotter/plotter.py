@@ -9,31 +9,31 @@ except:
     import RPiDummy as GPIO
 
 logger = logging.getLogger("plotterLog")
- 
+
+
 class Plotter:
 
-    B =350   # mm
+    B = 350   # mm
     stepPerRot = 2048  # steps in one rotation
     sd = 79  # spool diameter 2piR mm
-   
 
     leftMotorPin = 32
     leftMotorDirPin = 16
-    
+
     rightMotorPin = 18
     rightMotorDirPin = 22
 
     penPin = 12  # servo pin PWM
-    lastPenPos =False
+    lastPenPos = False
 
     #pwm = None
-    isDebugMode=False
-    def __init__(self, orgX, orgY ):
+    isDebugMode = False
+
+    def __init__(self, orgX, orgY):
         self.currentLeft = 0
         self.currentRight = 0
         self.orgX = orgX
         self.orgY = orgY
-        
 
         # tps = 79/2038  #thread per step mm
         self.lenPerStep = self.stepPerRot/self.sd
@@ -45,23 +45,23 @@ class Plotter:
         # B*B - 2*B*OrgX + intlenLeft    # right thread B^2 + 2BX + ll;
         self.intlenRight = intlenghts['right']
 
-    def init(self,debug=False):
+    def init(self, debug=False):
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
-    
+
         GPIO.setup(self.leftMotorPin, GPIO.OUT)
         GPIO.setup(self.leftMotorDirPin, GPIO.OUT)
-        
+
         GPIO.setup(self.rightMotorPin, GPIO.OUT)
         GPIO.setup(self.rightMotorDirPin, GPIO.OUT)
-        
+
         GPIO.setup(self.penPin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.penPin, 50)
         self.pwm.start(0)
-        
-        #make sure the pen is up
+
+        # make sure the pen is up
         self.movePen(PenDirection.Up)
-        self.isDebugMode =debug
+        self.isDebugMode = debug
 
     def getThreadLength(self, x, y):
         leftSq = x*x + y*y
@@ -78,14 +78,14 @@ class Plotter:
 
         logger.info(
             "getThreadLength Original X=%s Y=%s L=%s R=%s", x, y, left, right)
-        
+
         # account for the current postion
-        #TODO: i think using steps insted of the length would be more accurate. steps will more accurately represent the current length\situation
+        # TODO: i think using steps insted of the length would be more accurate. steps will more accurately represent the current length\situation
         left = left - self.currentLeft
         right = right - self.currentRight
 
-        #store the cord length that would be out
-        self.currentLeft = leftCord 
+        # store the cord length that would be out
+        self.currentLeft = leftCord
         self.currentRight = rightCord
 
         logger.info(
@@ -100,12 +100,14 @@ class Plotter:
         rightSteps = round(rightLen*self.lenPerStep)
 
         logger.info("stepsToTake L=%s R=%s LS=%s RS=%s",
-                          leftLen, rightLen, leftSteps, rightSteps)
+                    leftLen, rightLen, leftSteps, rightSteps)
         return {'left': leftSteps, 'right': rightSteps}
 
     def doMove(self, leftSteps, rightSteps, penDown):
-        leftDir = CordDirection.Forward if leftSteps >= 0 else CordDirection.Backward  # if positive move forward
-        rightDir = CordDirection.Forward if rightSteps >= 0 else CordDirection.Backward  # if positive move forward
+        # if positive move forward
+        leftDir = CordDirection.Forward if leftSteps >= 0 else CordDirection.Backward
+        # if positive move forward
+        rightDir = CordDirection.Forward if rightSteps >= 0 else CordDirection.Backward
 
         # now that we have the direction we can focus just on the absolute values
         leftSteps = abs(leftSteps)
@@ -118,12 +120,30 @@ class Plotter:
 
         logger.info("doMove LS=%s RS=%s", leftSteps, rightSteps)
         logger.info("doMove LD=%s RD=%s", "up" if leftDir == CordDirection.Forward
-                           else "down", "up" if rightDir == CordDirection.Forward else "down")
+                    else "down", "up" if rightDir == CordDirection.Forward else "down")
         logger.info("doMove MaxSteps=%s", maxSteps)
         logger.info("doMove penDown=%s", penDown)
-        
+
         self.movePen(penDown)
-        self.dostep(maxSteps,leftSteps, rightSteps, leftDir, rightDir 0,0,0)
+        a1 = 0
+        a2 = 0
+        for i in range(0, maxSteps-1):
+            a1 += leftSteps
+            
+            if a1 >= maxSteps:
+                a1 -= maxSteps
+                # bc.makeStep(0,d1)
+                self.makeOneStep(self.leftMotorPin,
+                             self.leftMotorDirPin, leftDir)
+            a2 += rightSteps
+            if a2 >= maxSteps:
+                a2 -= maxSteps
+                # bc.makeStep(1,d2)
+                self.makeOneStep(self.rightMotorPin,
+                             self.rightMotorDirPin, rightDir)
+
+
+
         # for i in range(1, maxSteps):
         #     if steppedLeft < leftSteps:  # if steppedLeft > leftSteps we have done our left steps. so dont do anything
         #         self.makeOneStep(self.leftMotorPin,
@@ -133,38 +153,37 @@ class Plotter:
         #         self.makeOneStep(self.rightMotorPin,
         #                          self.rightMotorDirPin, rightDir)
         #         steppedRight += 1
-    
-    #not tested
-    def dostep( steps,s1,s2, leftDir,rightDir, stepped,a1,a2):
-        if stepped < steps :
-            stepped= stepped + 1
-            a1 += s1
-            if a1>=steps :
-                a1 -= steps
-                #bc.makeStep(0,d1)
-                self.makeOneStep(self.leftMotorPin, self.leftMotorDirPin, leftDir) 
 
-            a2 += s2
-            if a2>=steps :
-                a2 -= steps
-                #bc.makeStep(1,d2)
-                self.makeOneStep(self.rightMotorPin, self.RightMotorDirPin, rightDir) 
-                        
-            self.doStep( steps,s1,s2, leftDir,rightDir, stepped,a1,a2)
-                    
-               
+    #not tested
+    def doStep(self, steps, s1, s2, leftDir, rightDir, stepped, a1, a2):
+        logger.debug("steps-{}, s1-{}, s2-{}, leftDir-{}, rightDir-{}, stepped-{}, a1-{}, a2-{}".format(
+            steps, s1, s2, leftDir, rightDir, stepped, a1, a2))
+
+        if a1 >= steps:
+            a1 -= steps
+            # bc.makeStep(0,d1)
+            self.makeOneStep(self.leftMotorPin,
+                             self.leftMotorDirPin, leftDir)
+        if a2 >= steps:
+            a2 -= steps
+            # bc.makeStep(1,d2)
+            self.makeOneStep(self.rightMotorPin,
+                             self.rightMotorDirPin, rightDir)
+        #self.doStep(steps, s1, s2, leftDir, rightDir, stepped, a1, a2)
 
     def makeOneStep(self, motorPin, dirPin, dir):
-        logger.debug("makeOneStep MotorPin=%s DirPin=%s Dir=%s", motorPin, dirPin, dir)
+        logger.debug("makeOneStep MotorPin=%s DirPin=%s Dir=%s",
+                     motorPin, dirPin, dir)
         # set direction
-        GPIO.output(dirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
+        GPIO.output(dirPin, GPIO.LOW if dir ==
+                    CordDirection.Forward else GPIO.HIGH)
         GPIO.output(motorPin, GPIO.HIGH)
         if not self.isDebugMode:
             time.sleep(0.01)
         # reset
         logger.debug("makeOneStep Reset")
         GPIO.output(motorPin, GPIO.LOW)
-    
+
     def moveTo(self, x, y, penDown):
         try:
             len = self.getThreadLength(x, y)
@@ -172,39 +191,39 @@ class Plotter:
             self.doMove(steps['left'], steps['right'], penDown)
         except Exception:
             logger.exception("something bad happed")
-       
-     
-     
+
     def movePen(self, dir):
-        if self.lastPenPos != dir :
-            #true = down 180 degree
-            #false = up 0 degree
-            angle = 5 if dir == PenDirection.Down  else 170
+        if self.lastPenPos != dir:
+            # true = down 180 degree
+            # false = up 0 degree
+            angle = 5 if dir == PenDirection.Down else 170
             duty = float(angle) / 18 + 2
-            self.pwm.ChangeDutyCycle(duty)     
+            self.pwm.ChangeDutyCycle(duty)
             time.sleep(0.01)
-            self.lastPenPos =dir
+            self.lastPenPos = dir
 
     def moveRight(self, dir, steps):
         logger.info("moving right %s steps", steps)
         # set direction
-        GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
+        GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir ==
+                    CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
             GPIO.output(self.rightMotorPin, GPIO.HIGH)
             time.sleep(0.01)
-            # reset        
+            # reset
             GPIO.output(self.rightMotorPin, GPIO.LOW)
         logger.info("done")
 
     def moveLeft(self, dir, steps):
         logger.info("moving Left %s steps", steps)
         # set direction
-        GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir == CordDirection.Forward else GPIO.HIGH)
+        GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir ==
+                    CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
             GPIO.output(self.leftMotorPin, GPIO.HIGH)
-            if not self.isDebugMode:  
+            if not self.isDebugMode:
                 time.sleep(0.01)
-            # reset        
+            # reset
             GPIO.output(self.leftMotorPin, GPIO.LOW)
         logger.info("done")
 
@@ -213,10 +232,12 @@ class Plotter:
         self.moveTo(self.orgX, self.orgY, False)
         GPIO.cleanup()
 
+
 class CordDirection(Enum):
-    Forward =0
-    Backward=1
+    Forward = 0
+    Backward = 1
+
 
 class PenDirection(Enum):
-    Up=1
-    Down=0
+    Up = 1
+    Down = 0
