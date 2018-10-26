@@ -15,7 +15,7 @@ def getLogger():
     file_handler.setFormatter(formatter)
 
     steam_handler = logging.StreamHandler()
-    steam_handler.setLevel(logging.DEBUG)
+    steam_handler.setLevel(logging.INFO)
     steam_handler.setFormatter(formatter)
 
     logger.addHandler(file_handler)
@@ -23,7 +23,7 @@ def getLogger():
     return logger
 
 def getPlotter():
-    myPlotter = Plotter(100, 80)
+    myPlotter = Plotter(100, 70)
     myPlotter.init(False)
     return myPlotter
 
@@ -35,18 +35,29 @@ def drawRectangle():
 
     # draw a line
     myPlotter = getPlotter()
+    logger.info("Moving to initial pos")
     myPlotter.moveTo(100, 150, PenDirection.Up)  # go to initial postion
+    
     input("Press Enter to continue...")
+    logger.info("Drawing left vertical line")
     myPlotter.moveTo(100, 500, PenDirection.Down)  # |
+    
     input("Press Enter to continue...")
+    logger.info("Drawing bottom horizontal line")
     myPlotter.moveTo(250, 500, PenDirection.Down)  # |__
+    
     input("Press Enter to continue...")
+    logger.info("Drawing right vertical line")
     myPlotter.moveTo(250, 150, PenDirection.Down)  # |__|
+    
     input("Press Enter to continue...")
-    # __
+    logger.info("Drawing top horizontal line")                                                   
+                                                    # __
     myPlotter.moveTo(100, 150, PenDirection.Down)  # |__|
     # once done move back to the original position
+    
     input("Press Enter to continue...")
+    logger.info("Moving to initial post")                                                   
     myPlotter.finalize()
     logger.info("Done")
 
