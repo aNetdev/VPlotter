@@ -123,16 +123,36 @@ class Plotter:
         logger.info("doMove penDown=%s", penDown)
         
         self.movePen(penDown)
-        
-        for i in range(1, maxSteps):
-            if steppedLeft < leftSteps:  # if steppedLeft > leftSteps we have done our left steps. so dont do anything
-                self.makeOneStep(self.leftMotorPin,
-                                 self.leftMotorDirPin, leftDir)
-                steppedLeft += 1
-            if steppedRight < rightSteps:  # if steppedRight < rightSteps we have done our left steps. so dont do anything
-                self.makeOneStep(self.rightMotorPin,
-                                 self.rightMotorDirPin, rightDir)
-                steppedRight += 1
+        self.dostep(maxSteps,leftSteps, rightSteps, leftDir, rightDir 0,0,0)
+        # for i in range(1, maxSteps):
+        #     if steppedLeft < leftSteps:  # if steppedLeft > leftSteps we have done our left steps. so dont do anything
+        #         self.makeOneStep(self.leftMotorPin,
+        #                          self.leftMotorDirPin, leftDir)
+        #         steppedLeft += 1
+        #     if steppedRight < rightSteps:  # if steppedRight < rightSteps we have done our left steps. so dont do anything
+        #         self.makeOneStep(self.rightMotorPin,
+        #                          self.rightMotorDirPin, rightDir)
+        #         steppedRight += 1
+    
+    #not tested
+    def dostep( steps,s1,s2, leftDir,rightDir, stepped,a1,a2):
+        if stepped < steps :
+            stepped= stepped + 1
+            a1 += s1
+            if a1>=steps :
+                a1 -= steps
+                #bc.makeStep(0,d1)
+                self.makeOneStep(self.leftMotorPin, self.leftMotorDirPin, leftDir) 
+
+            a2 += s2
+            if a2>=steps :
+                a2 -= steps
+                #bc.makeStep(1,d2)
+                self.makeOneStep(self.rightMotorPin, self.RightMotorDirPin, rightDir) 
+                        
+            self.doStep( steps,s1,s2, leftDir,rightDir, stepped,a1,a2)
+                    
+               
 
     def makeOneStep(self, motorPin, dirPin, dir):
         logger.debug("makeOneStep MotorPin=%s DirPin=%s Dir=%s", motorPin, dirPin, dir)
