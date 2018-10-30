@@ -1,39 +1,48 @@
+import os
 import logging
 from plotter.plotter import Plotter, PenDirection, CordDirection
 from datetime import datetime
 
+logger =None
+myPlotter =None
 
 def getLogger():
-    logger = logging.getLogger("plotterLog")
-    logger.setLevel(logging.DEBUG)
+    global logger 
+    if logger is None:        
+        logger= logging.getLogger("plotterLog")
+        logger.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-    file_handler = logging.FileHandler(
-        "plotterLog{date}.log".format(date=datetime.now().strftime('%Y%m%d')))
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(formatter)
+        file_handler = logging.FileHandler(
+            "plotterLog{date}.log".format(date=datetime.now().strftime('%Y%m%d')))
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
 
-    steam_handler = logging.StreamHandler()
-    steam_handler.setLevel(logging.DEBUG)
-    steam_handler.setFormatter(formatter)
+        steam_handler = logging.StreamHandler()
+        steam_handler.setLevel(logging.DEBUG)
+        steam_handler.setFormatter(formatter)
 
-    logger.addHandler(file_handler)
-    logger.addHandler(steam_handler)
+        logger.addHandler(file_handler)
+        logger.addHandler(steam_handler)
     return logger
 
 def getPlotter():
-    myPlotter = Plotter(100, 70)
-    myPlotter.init(False)
+    global myPlotter
+    if myPlotter is None :        
+        myPlotter = Plotter(100, 70)
+        myPlotter.init(False)
     return myPlotter
 
 def drawRectangle():
+    global logger
     logger = getLogger()
     logger.info("Drawing Rectangle")
 
     # Max dimensions xmin 100, x max250 ymin= 150, ymax 500
 
     # draw a line
+    global myPlotter
     myPlotter = getPlotter()
     logger.info("Moving to initial pos")
     myPlotter.moveTo(50, 150, PenDirection.Up)  # go to initial postion
@@ -62,9 +71,10 @@ def drawRectangle():
     logger.info("Done")
 
 def drawTriangle():
+    global logger
     logger = getLogger()
     logger.info("Drawing Triangle")
-    
+    global myPlotter
     myPlotter = getPlotter()
     logger.info("Moving to initial pos")
     myPlotter.moveTo(100, 150, PenDirection.Up)  # go to initial postion
@@ -85,25 +95,33 @@ def drawTriangle():
     myPlotter.finalize()
 
 def leftLiftUp(steps):
+    global logger
+    global myPlotter
     logger = getLogger()
     logger.debug("leftLiftUp {}".format(steps))
     myPlotter = getPlotter()
     myPlotter.moveLeft(CordDirection.Backward,steps)
 
 def leftLiftDown(steps):
+    global logger
+    global myPlotter
     logger = getLogger()
     logger.debug("leftLiftDown {}".format(steps))
     myPlotter = getPlotter()
     myPlotter.moveLeft(CordDirection.Forward,steps)
 
 def rightLiftUp(steps):
+    global logger
+    global myPlotter
     logger = getLogger()
     logger.debug("rightLiftUp {}".format(steps))
     myPlotter = getPlotter()
     myPlotter.moveRight(CordDirection.Backward,steps)
     
 def rightLiftDown(steps):
-    logger = getLogger()
+    global logger
+    global myPlotter 
+    logger= getLogger()
     logger.debug("rightLiftDown {}".format(steps))
     myPlotter = getPlotter()
     myPlotter.moveRight(CordDirection.Forward,steps)
@@ -113,9 +131,11 @@ def calibration(path):
     cords = fs.readlines()
     parsedCords=  [ cord.strip().split() for cord in cords]
     
+    global logger 
     logger = getLogger()
     logger.info("Drawing calibration")
     
+    global myPlotter
     myPlotter = getPlotter()
     logger.info("Moving to initial pos")
     myPlotter.moveTo(100, 150, PenDirection.Up) 
@@ -129,7 +149,7 @@ def calibration(path):
     
         
 
-
-calibration("D:\\Work\\RaspberryPi\\vplotter\\calibration\\xycordinates.txt")
+#path = os.path.join(".","calibration","xycordinates.txt")
+#calibration(path)
 #drawTriangle()
 #drawRectangle();
