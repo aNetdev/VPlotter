@@ -6,20 +6,22 @@ import time
 try:
     import RPi.GPIO as GPIO
 except:
-    import RPiDummy as GPIO
+    import plotter.RPiDummy as GPIO
 
 logger = logging.getLogger("plotterLog")
 
 
 class Plotter:
 
-    B = 350   # mm
+    B = 360   # mm
     stepPerRot = 2048  # steps in one rotation
     sd = 79  # spool diameter 2piR mm
 
+    leftMotorEnable=36
     leftMotorPin = 32
     leftMotorDirPin = 16
 
+    rightMotorEnable=38
     rightMotorPin = 18
     rightMotorDirPin = 22
 
@@ -49,11 +51,18 @@ class Plotter:
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
 
+        GPIO.setup(self.leftMotorEnable, GPIO.OUT)
         GPIO.setup(self.leftMotorPin, GPIO.OUT)
         GPIO.setup(self.leftMotorDirPin, GPIO.OUT)
 
+        GPIO.setup(self.rightMotorEnable, GPIO.OUT)
         GPIO.setup(self.rightMotorPin, GPIO.OUT)
         GPIO.setup(self.rightMotorDirPin, GPIO.OUT)
+
+
+        #pull low to enable the easy drivers
+        GPIO.output(self.leftMotorEnable, GPIO.LOW)    
+        GPIO.output(self.rightMotorEnable, GPIO.LOW)    
 
         GPIO.setup(self.penPin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.penPin, 50)
@@ -127,22 +136,21 @@ class Plotter:
         self.movePen(penDown)
         a1 = 0
         a2 = 0
-        for i in range(0, maxSteps-1):
+        for i in range(1, maxSteps):
+            logger.debug("stepping {}/{}".format(i, maxSteps))
             a1 += leftSteps
-            
+
             if a1 >= maxSteps:
                 a1 -= maxSteps
                 # bc.makeStep(0,d1)
                 self.makeOneStep(self.leftMotorPin,
-                             self.leftMotorDirPin, leftDir)
+                                 self.leftMotorDirPin, leftDir)
             a2 += rightSteps
             if a2 >= maxSteps:
                 a2 -= maxSteps
                 # bc.makeStep(1,d2)
                 self.makeOneStep(self.rightMotorPin,
-                             self.rightMotorDirPin, rightDir)
-
-
+                                 self.rightMotorDirPin, rightDir)
 
         # for i in range(1, maxSteps):
         #     if steppedLeft < leftSteps:  # if steppedLeft > leftSteps we have done our left steps. so dont do anything
@@ -153,23 +161,6 @@ class Plotter:
         #         self.makeOneStep(self.rightMotorPin,
         #                          self.rightMotorDirPin, rightDir)
         #         steppedRight += 1
-
-    #not tested
-    def doStep(self, steps, s1, s2, leftDir, rightDir, stepped, a1, a2):
-        logger.debug("steps-{}, s1-{}, s2-{}, leftDir-{}, rightDir-{}, stepped-{}, a1-{}, a2-{}".format(
-            steps, s1, s2, leftDir, rightDir, stepped, a1, a2))
-
-        if a1 >= steps:
-            a1 -= steps
-            # bc.makeStep(0,d1)
-            self.makeOneStep(self.leftMotorPin,
-                             self.leftMotorDirPin, leftDir)
-        if a2 >= steps:
-            a2 -= steps
-            # bc.makeStep(1,d2)
-            self.makeOneStep(self.rightMotorPin,
-                             self.rightMotorDirPin, rightDir)
-        #self.doStep(steps, s1, s2, leftDir, rightDir, stepped, a1, a2)
 
     def makeOneStep(self, motorPin, dirPin, dir):
         logger.debug("makeOneStep MotorPin=%s DirPin=%s Dir=%s",
@@ -230,6 +221,11 @@ class Plotter:
     def finalize(self):
         self.movePen(PenDirection.Up)
         self.moveTo(self.orgX, self.orgY, False)
+        
+        #pull low to enable the easy drivers
+        GPIO.output(self.leftMotorEnable, GPIO.HIGH)    
+        GPIO.output(self.rightMotorEnable, GPIO.HIGH)   
+
         GPIO.cleanup()
 
 
