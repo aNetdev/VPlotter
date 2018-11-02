@@ -20,7 +20,7 @@ def getLogger():
         file_handler.setFormatter(formatter)
 
         steam_handler = logging.StreamHandler()
-        steam_handler.setLevel(logging.DEBUG)
+        steam_handler.setLevel(logging.INFO)
         steam_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
@@ -138,7 +138,7 @@ def calibration(path):
     global myPlotter
     myPlotter = getPlotter()
     logger.info("Moving to initial pos")
-    myPlotter.moveTo(100, 150, PenDirection.Up) 
+    myPlotter.moveTo(30, 60, PenDirection.Up) 
     
     for pc in parsedCords:
         x = int(pc[0])
@@ -146,10 +146,11 @@ def calibration(path):
         pen = PenDirection.Down if pc[2]=="0" else PenDirection.Up
         myPlotter.moveTo(x, y, pen)
 
+    myPlotter.finalize()
     
         
 
-#path = os.path.join(".","calibration","xycordinates.txt")
-#calibration(path)
+path = os.path.join(".","calibration","xycordinates.txt")
+calibration(path)
 #drawTriangle()
 #drawRectangle();

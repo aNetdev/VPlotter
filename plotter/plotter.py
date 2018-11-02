@@ -184,11 +184,15 @@ class Plotter:
             logger.exception("something bad happed")
 
     def movePen(self, dir):
+        logger.debug("dir %s", dir)
+        logger.debug("lastPenPos %s", self.lastPenPos)
         if self.lastPenPos != dir:
             # true = down 180 degree
             # false = up 0 degree
             angle = 5 if dir == PenDirection.Down else 170
+            logger.debug("angle %s", angle)
             duty = float(angle) / 18 + 2
+            logger.debug("duty %s", duty)
             self.pwm.ChangeDutyCycle(duty)
             time.sleep(0.01)
             self.lastPenPos = dir
