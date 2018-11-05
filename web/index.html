@@ -1,0 +1,16 @@
+<head>
+    <title>Yet Another Vertical Plotter</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"> </script>
+</head>
+
+<body>
+    <form id="frmUpload" method="post" enctype="multipart/form-data">
+        <div>
+            <input type="file" name="files[]" multiple>
+            <input type="submit" value="Upload File" id="btnSubmit" name="submit">
+        </div>
+    </form>
+    <script src="scripts/common.js"  ></script>
+</body>
