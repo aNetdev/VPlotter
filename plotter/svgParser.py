@@ -1,4 +1,5 @@
 import os
+import json
 from xml.dom import minidom
 from svg.path import Line, Arc, QuadraticBezier, CubicBezier, parse_path
 
@@ -32,9 +33,31 @@ class SVGParser:
                 else:
                     # straight line move so just calculate 1 poinet start and end with pen up
                     points.extend(self.pathToPoints(seg, 0, 1))
-        xyCords = '\n'.join(map(lambda x: "{},{},{}".format(
-            str(x[0]), str(x[1]), str(x[2])), points))
-        return xyCords
+        #xyCords = None
+        # if formatAsString:
+        #     xyCords = '\n'.join(map(lambda x: "{},{},{}".format(
+        #         str(x[0]), str(x[1]), str(x[2])), points))
+        # else:
+        #     xyCords = points
+        return points
+    
+    def covertXYToJson(self, cords):
+        #{moveToX:[],
+        # moveToY:[],
+        # lineToX:[],
+        # lineToY:[]}
+        moveToX = [p[0] for p in cords if p[2] == 0]
+        moveToY = [p[1] for p in cords if p[2] == 0]
+        lineToX = [p[0] for p in cords if p[2] == 1]
+        lineToY = [p[1] for p in cords if p[2] == 1]
+        
+        data ={}
+        data['moveToX']=moveToX
+        data['moveToY']=moveToY
+        data['lineToX']=lineToX
+        data['lineToY']=lineToY
+        
+        return json.dumps(data)
 
 
 # p = SVGParser()

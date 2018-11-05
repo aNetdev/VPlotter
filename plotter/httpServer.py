@@ -25,12 +25,16 @@ class BasicServer(BaseHTTPRequestHandler):
             # fields = parse_qs(field_data)
             # data =fields[1]
             self.send_response(200)
+            self.send_header('Content-type', 'application/json')
             self.end_headers()
             
             #now we have the svg data so start processing
             parser = SVGParser()
             cords =parser.getXYCordsFromSVG(field_data)            
-            self.wfile.write(bytes(cords,'utf-8'))
+            jsonData =parser.covertXYToJson(cords)      
+
+            self.wfile.write(jsonData.encode())
+            
 
  
 
