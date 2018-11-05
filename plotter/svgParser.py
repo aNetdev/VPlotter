@@ -13,7 +13,9 @@ class SVGParser:
             cp = path.point(f)
             p.append((cp.real, cp.imag, penDown))
         return p
-
+    
+    # def applyPlotterCals(points):
+        
     def getXYCordsFromSVG(self, svgString):
         #path = os.path.join( os.path.dirname(__file__), "..", "calibration", "bull.svg")
         #svg_string = open(path,"r",encoding="utf8").read()
