@@ -17,18 +17,18 @@ class Plotter:
     stepPerRot = 2048  # steps in one rotation
     sd = 79  # spool diameter 2piR mm
 
-    leftMotorEnable=36
+    leftMotorEnable = 36
     leftMotorPin = 32
     leftMotorDirPin = 16
 
-    rightMotorEnable=38
+    rightMotorEnable = 38
     rightMotorPin = 18
     rightMotorDirPin = 22
 
     penPin = 12  # servo pin PWM
     lastPenPos = False
 
-    #pwm = None
+    # pwm = None
     isDebugMode = False
 
     def __init__(self, orgX, orgY):
@@ -59,11 +59,6 @@ class Plotter:
         GPIO.setup(self.rightMotorPin, GPIO.OUT)
         GPIO.setup(self.rightMotorDirPin, GPIO.OUT)
 
-
-        #pull low to enable the easy drivers
-        GPIO.output(self.leftMotorEnable, GPIO.LOW)    
-        GPIO.output(self.rightMotorEnable, GPIO.LOW)    
-
         GPIO.setup(self.penPin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.penPin, 50)
         self.pwm.start(0)
@@ -82,11 +77,11 @@ class Plotter:
         left = leftCord if leftSq > 0 else leftCord * -1
         right = rightCord if rightSq > 0 else rightCord * -1
 
-        logger.info(
+        logger.debug(
             "getThreadLength Current L=%s R=%s", self.currentLeft, self.currentRight)
 
-        logger.info(
-            "getThreadLength Original X=%s Y=%s L=%s R=%s", x, y, left, right)
+        logger.debug(
+            "getThreadLength to go X=%s Y=%s L=%s R=%s", x, y, left, right)
 
         # account for the current postion
         # TODO: i think using steps insted of the length would be more accurate. steps will more accurately represent the current length\situation
@@ -97,7 +92,7 @@ class Plotter:
         self.currentLeft = leftCord
         self.currentRight = rightCord
 
-        logger.info(
+        logger.debug(
             "getThreadLength current pos accounted X=%s Y=%s L=%s R=%s", x, y, left, right)
         return {'left': left, 'right': right}
 
@@ -108,7 +103,7 @@ class Plotter:
         leftSteps = round(leftLen*self.lenPerStep)
         rightSteps = round(rightLen*self.lenPerStep)
 
-        logger.info("stepsToTake L=%s R=%s LS=%s RS=%s",
+        logger.debug("stepsToTake L=%s R=%s LS=%s RS=%s",
                     leftLen, rightLen, leftSteps, rightSteps)
         return {'left': leftSteps, 'right': rightSteps}
 
@@ -127,11 +122,11 @@ class Plotter:
         # so see which steps are larger left vs right and loop on the larger steps
         maxSteps = leftSteps if leftSteps > rightSteps else rightSteps
 
-        logger.info("doMove LS=%s RS=%s", leftSteps, rightSteps)
-        logger.info("doMove LD=%s RD=%s", "up" if leftDir == CordDirection.Forward
+        logger.debug("doMove LS=%s RS=%s", leftSteps, rightSteps)
+        logger.debug("doMove LD=%s RD=%s", "up" if leftDir == CordDirection.Forward
                     else "down", "up" if rightDir == CordDirection.Forward else "down")
-        logger.info("doMove MaxSteps=%s", maxSteps)
-        logger.info("doMove penDown=%s", penDown)
+        logger.debug("doMove MaxSteps=%s", maxSteps)
+        logger.debug("doMove penDown=%s", penDown)
 
         self.movePen(penDown)
         a1 = 0
@@ -198,7 +193,7 @@ class Plotter:
             self.lastPenPos = dir
 
     def moveRight(self, dir, steps):
-        logger.info("moving right %s steps", steps)
+        logger.debug("moving right %s steps", steps)
         # set direction
         GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir ==
                     CordDirection.Forward else GPIO.HIGH)
@@ -207,10 +202,10 @@ class Plotter:
             time.sleep(0.01)
             # reset
             GPIO.output(self.rightMotorPin, GPIO.LOW)
-        logger.info("done")
+        logger.debug("done")
 
     def moveLeft(self, dir, steps):
-        logger.info("moving Left %s steps", steps)
+        logger.debug("moving Left %s steps", steps)
         # set direction
         GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir ==
                     CordDirection.Forward else GPIO.HIGH)
@@ -220,19 +215,32 @@ class Plotter:
                 time.sleep(0.01)
             # reset
             GPIO.output(self.leftMotorPin, GPIO.LOW)
-        logger.info("done")
+        logger.debug("done")
 
     def finalize(self):
+        logger.debug("finalize")
         self.movePen(PenDirection.Up)
         self.moveTo(self.orgX, self.orgY, False)
-        
-        #pull low to enable the easy drivers
-        GPIO.output(self.leftMotorEnable, GPIO.HIGH)    
-        GPIO.output(self.rightMotorEnable, GPIO.HIGH)   
+        self.disableSteppers()
 
+    def disableSteppers(self):
+        logger.debug("disableSteppers")
+        # pull high to disable the easy drivers
+        GPIO.output(self.leftMotorEnable, GPIO.HIGH)
+        time.sleep(0.01)
+        GPIO.output(self.rightMotorEnable, GPIO.HIGH)
+        time.sleep(0.01)
+
+    def enableSteppers(self):
+        logger.debug("enableSteppers")
+        # pull low to enable the easy drivers
+        GPIO.output(self.leftMotorEnable, GPIO.LOW)
+        time.sleep(0.01)    
+        GPIO.output(self.rightMotorEnable, GPIO.LOW)           
+        time.sleep(0.01)
+    
+    def cleanup(self):
         GPIO.cleanup()
-
-
 class CordDirection(Enum):
     Forward = 0
     Backward = 1
