@@ -22,14 +22,14 @@ class BasicServer(BaseHTTPRequestHandler):
         if self.path == '/uploadSVG':
             length = self.headers['content-length']
             field_data = self.rfile.read(int(length))
-            fields = parse_qs(field_data)
-            data =fields[1]
+            # fields = parse_qs(field_data)
+            # data =fields[1]
             self.send_response(200)
             self.end_headers()
             
             #now we have the svg data so start processing
             parser = SVGParser()
-            cords =parser.getXYCordsFromSVG(data)            
+            cords =parser.getXYCordsFromSVG(field_data)            
             self.wfile.write(bytes(cords,'utf-8'))
 
  
