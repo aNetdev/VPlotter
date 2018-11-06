@@ -64,11 +64,11 @@ class SVGParser:
         
         return json.dumps(data)
 
-
-# p = SVGParser()
-# f = open("D:\\Work\\RaspberryPi\\vplotter\\calibration\\Triangle.svg")
-# xy = p.getXYCordsFromSVG(f.read())
-# f.close()
-# w = open("test.txt",'w')
-# w.write(xy)
-# w.close()
+if __name__ == "__main__":
+    p = SVGParser()
+    f = open("D:\\Work\\RaspberryPi\\vplotter\\calibration\\Triangle.svg")
+    xy = p.getXYCordsFromSVG(f.read())
+    f.close()
+    w = open("test.txt",'w')
+    w.write(xy)
+    w.close()

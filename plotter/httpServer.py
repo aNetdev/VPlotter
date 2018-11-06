@@ -50,8 +50,7 @@ class BasicServer(BaseHTTPRequestHandler):
 
  
 
-
-
-httpd=HTTPServer(('localhost',8080), BasicServer)
-httpd.serve_forever()
+if __name__ == "__main__":
+    httpd=HTTPServer(('0.0.0.0',8080), BasicServer)
+    httpd.serve_forever()
 
