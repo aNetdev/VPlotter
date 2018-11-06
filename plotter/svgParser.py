@@ -48,16 +48,19 @@ class SVGParser:
         # moveToY:[],
         # lineToX:[],
         # lineToY:[]}
-        moveToX = [p[0] for p in cords if p[2] == 0]
-        moveToY = [p[1] for p in cords if p[2] == 0]
-        lineToX = [p[0] for p in cords if p[2] == 1]
-        lineToY = [p[1] for p in cords if p[2] == 1]
+        # moveToX = [p[0] for p in cords if p[2] == 0]
+        # moveToY = [p[1] for p in cords if p[2] == 0]
+        # lineToX = [p[0] for p in cords if p[2] == 1]
+        # lineToY = [p[1] for p in cords if p[2] == 1]
         
+        x =[p[0] for p in cords]
+        y =[p[1] for p in cords]
+        pen =[p[2] for p in cords]
+        #as an after thought we cannot separate this to move and lines, if we do that we loose continuity 
         data ={}
-        data['moveToX']=moveToX
-        data['moveToY']=moveToY
-        data['lineToX']=lineToX
-        data['lineToY']=lineToY
+        data['x']=x
+        data['y']=y     
+        data['p']=pen     
         
         return json.dumps(data)
 

@@ -1,7 +1,9 @@
 import os
+import json
 from urllib.parse import parse_qs
 from svgParser import SVGParser
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
 
 class BasicServer(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -34,7 +36,17 @@ class BasicServer(BaseHTTPRequestHandler):
             jsonData =parser.covertXYToJson(cords)      
 
             self.wfile.write(jsonData.encode())
+       
+        elif self.path == '/print':
+            length = self.headers['content-length']
+            field_data = self.rfile.read(int(length))
+            self.send_response(200)
+            self.end_headers()
+            jdata = json.loads(field_data)
+             
             
+            #plotter print cords
+
 
  
 
