@@ -62,8 +62,8 @@ class SVGParser:
         data['y']=y     
         data['p']=pen     
         
-        return json.dumps(data)
-
+        return data #json.dumps(data)
+    
 
 # p = SVGParser()
 # f = open("D:\\Work\\RaspberryPi\\vplotter\\calibration\\Triangle.svg")

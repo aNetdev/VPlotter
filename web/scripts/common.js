@@ -1,7 +1,8 @@
 const urlUpload = 'uploadSVG';
-const urlPrint = 'print';
+const urlPlot = 'plot';
+
 const input = document.getElementById('fileUpload');
-const print = document.getElementById('btnPrint');
+const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
 const scale = document.getElementById("scale");
 const drawGraph = (data) => {
@@ -78,9 +79,9 @@ const onScaleChange = () => {
     document.getElementById('txtRange').innerText = document.getElementById("scale").value + '%';
 };
 
-const onPrint = () => {
+const onPlot = () => {
 
-    fetch(urlPrint, {
+    fetch(urlPlot, {
         method: "POST",
         body: sessionStorage.jdataMod
     });
@@ -89,7 +90,7 @@ const onPrint = () => {
 const onSelectFile = () => upload(input.files[0]);
 input.addEventListener('change', onSelectFile);
 scale.addEventListener('change', onScaleChange);
-print.addEventListener('click', onPrint);
+plot.addEventListener('click', onPlot);
 Array.from(calcCtrls).forEach(element => {
     element.addEventListener('change', onCalcChanged);
 });
