@@ -172,7 +172,7 @@ class Plotter:
         logger.debug("makeOneStep Reset")
         GPIO.output(motorPin, GPIO.LOW)
 
-    async def moveTo(self, x, y, penDown):
+    def moveTo(self, x, y, penDown):
         try:
             len = self.getThreadLength(x, y)
             steps = self.stepsToTake(len['left'], len['right'])
