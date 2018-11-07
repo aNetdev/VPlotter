@@ -1,7 +1,8 @@
 const urlUpload = 'uploadSVG';
-const urlPrint = 'print';
+const urlPlot = 'plot';
+
 const input = document.getElementById('fileUpload');
-const print = document.getElementById('btnPrint');
+const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
 const scale = document.getElementById("scale");
 const drawGraph = (data) => {
@@ -13,7 +14,8 @@ const drawGraph = (data) => {
         y: data.y.map((y) => y * -1),
         mode: 'lines',
         type: 'scatter',
-        name: 'Path'    };
+        name: 'Path'
+    };
 
     var data = [cords];
 
@@ -39,7 +41,7 @@ const updateGraph = (scale, xOffset, yOffset) => {
     data = JSON.parse(sessionStorage.jdataOrg);
     newX = data.x.map(x => Math.round(((x * scale) + xOffset)));
     newY = data.y.map(y => Math.round(((y * scale) + yOffset)));
-    pen =data.p
+    pen = data.p
 
     var cords = {
         x: newX,
@@ -48,7 +50,7 @@ const updateGraph = (scale, xOffset, yOffset) => {
         type: 'scatter',
         name: 'Path'
     };
-   
+
     var layout = {
         xaxis: {
             range: [15, 350]
@@ -62,7 +64,7 @@ const updateGraph = (scale, xOffset, yOffset) => {
     sessionStorage.jdataMod = JSON.stringify({
         x: newX,
         y: newY,
-        p: pen        
+        p: pen
     });
 
     Plotly.newPlot('divGraphCalc', data, layout);
@@ -78,18 +80,28 @@ const onScaleChange = () => {
     document.getElementById('txtRange').innerText = document.getElementById("scale").value + '%';
 };
 
-const onPrint = () => {
+const onPlot = () => {
+    cords = JSON.parse(sessionStorage.jdataMod);
+    orgX = document.getElementById('orgX').value;
+    orgY = document.getElementById('orgY').value;
 
-    fetch(urlPrint, {
+    fetch(urlPlot, {
         method: "POST",
-        body: sessionStorage.jdataMod
+        body: JSON.stringify({
+            orgX: orgX,
+            orgY: orgY,
+            cords: cords
+        })
     });
 };
 
-const onSelectFile = () => upload(input.files[0]);
+const onSelectFile = () => {    
+    upload(input.files[0]);
+};
+debugger;
 input.addEventListener('change', onSelectFile);
 scale.addEventListener('change', onScaleChange);
-print.addEventListener('click', onPrint);
+plot.addEventListener('click', onPlot);
 Array.from(calcCtrls).forEach(element => {
     element.addEventListener('change', onCalcChanged);
 });

@@ -62,7 +62,7 @@ class SVGParser:
         data['y']=y     
         data['p']=pen     
         
-        return json.dumps(data)
+        return data #json.dumps(data)
 
 if __name__ == "__main__":
     p = SVGParser()

@@ -25,7 +25,7 @@ def getLogger():
 
 
 def getPlotter():
-    plotter = Plotter(100, 70)
+    plotter = Plotter([],100, 70)
     plotter.init(debug=False)
     return plotter
 

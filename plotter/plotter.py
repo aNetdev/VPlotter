@@ -13,25 +13,27 @@ logger = logging.getLogger("plotterLog")
 
 class Plotter:
 
-    B = 360   # mm
-    stepPerRot = 2048  # steps in one rotation
-    sd = 79  # spool diameter 2piR mm
+    def __init__(self, config,orgX, orgY):
+        cRoot = config['plotter']
+        self.B = cRoot['b'] #360   # mm
+        self.stepPerRot =cRoot['stepsPerRotation'] #2048  # steps in one rotation
+        self.sd = cRoot['spoolDiameter']#79  # spool diameter 2piR mm
 
-    leftMotorEnable = 36
-    leftMotorPin = 32
-    leftMotorDirPin = 16
+        pins = cRoot['pins']
+        self.leftMotorEnable = pins['leftEnable'] #36
+        self.leftMotorPin = pins['leftPin'] #32
+        self.leftMotorDirPin = pins['leftDirPin'] #16
 
-    rightMotorEnable = 38
-    rightMotorPin = 18
-    rightMotorDirPin = 22
+        self.rightMotorEnable = pins['rightEnable'] #38
+        self.rightMotorPin = pins['rightPin'] #18
+        self.rightMotorDirPin = pins['rightDirPin'] #22
 
-    penPin = 12  # servo pin PWM
-    lastPenPos = False
+        self.penPin = pins['penPin'] #12  # servo pin PWM
+        self.lastPenPos = False
 
-    # pwm = None
-    isDebugMode = False
+        # pwm = None
+        self.isDebugMode = False
 
-    def __init__(self, orgX, orgY):
         self.currentLeft = 0
         self.currentRight = 0
         self.orgX = orgX
@@ -170,7 +172,7 @@ class Plotter:
         logger.debug("makeOneStep Reset")
         GPIO.output(motorPin, GPIO.LOW)
 
-    def moveTo(self, x, y, penDown):
+    async def moveTo(self, x, y, penDown):
         try:
             len = self.getThreadLength(x, y)
             steps = self.stepsToTake(len['left'], len['right'])
@@ -248,4 +250,4 @@ class CordDirection(Enum):
 
 class PenDirection(Enum):
     Up = 1
-    Down = 0
+    Down = 0    

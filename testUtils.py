@@ -1,6 +1,7 @@
 import os
 import logging
 from plotter.plotter import Plotter, PenDirection, CordDirection
+from plotter.config import Config
 from datetime import datetime
 
 logger =None
@@ -29,8 +30,9 @@ def getLogger():
 
 def getPlotter():
     global myPlotter
-    if myPlotter is None :        
-        myPlotter = Plotter(100, 70)
+    if myPlotter is None :     
+        config = Config().getConfig()   
+        myPlotter = Plotter(config,100, 70)
         myPlotter.init(False)
     return myPlotter
 
