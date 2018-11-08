@@ -26,6 +26,7 @@ class WebServer:
 
     def doPlot(self, data):
         self.isPlottingInProgress = True
+        self.progress.clear()
         logger.info("Starting  to Plot")
         orgX = int(data['orgX'])
         orgY = int(data['orgY'])
@@ -131,45 +132,50 @@ class WebServer:
         return web.json_response(data)
 
     async def progress_handler(self, request):
+        app = request.app
         ws = web.WebSocketResponse()
         await ws.prepare(request)
+        app["sockets"].append(ws)
         lastResultIndex = 0
-        async for msg in ws:
-            if msg.type == WSMsgType.TEXT:
-                if msg.data == 'close':
-                    await ws.close()
-                else:
-                    # send the results up to the last read
-                    while self.isPlottingInProgress:
-                        logger.info("self.isPlottingInProgress {}".format(
-                            self.isPlottingInProgress))
-                        l = len(self.progress)
-                        x = []
-                        y = []
-                        logger.info("progress len {}".format(l))
-                        logger.info(
-                            "lastResultIndex {}".format(lastResultIndex))
-                        # read the progress array
-                        for i in range(lastResultIndex, l-1):
-                            lastResultIndex = lastResultIndex + 1
-                            x.append(self.progress[i][0])
-                            y.append(self.progress[i][1])
+        # while True: #keep the websocket open
+        msg = await ws.receive()
+        if msg.type == WSMsgType.TEXT:               
+            # send the results up to the last read
+            while self.isPlottingInProgress:
+                logger.info("self.isPlottingInProgress {}".format(
+                    self.isPlottingInProgress))
+                l = len(self.progress)
+                x = []
+                y = []
+                logger.info("progress len {}".format(l))
+                logger.info(
+                    "lastResultIndex {}".format(lastResultIndex))
+                # read the progress array
+                for i in range(lastResultIndex, l-1):
+                    lastResultIndex = lastResultIndex + 1
+                    x.append(self.progress[i][0])
+                    y.append(self.progress[i][1])
 
-                        progress = self.progress[l-1][2] if l > 0 else 0
-                        logger.info("progress {}".format(progress))
-                        
-                        if len(x) > 0: #send data only if there is progress 
-                            data = {}
-                            data['x'] = x
-                            data['y'] = y
-                            data['prg'] = progress
+                progress = self.progress[l-1][2] if l > 0 else 0
+                logger.info("progress {}".format(progress))
+                
+                if len(x) > 0: #send data only if there is progress 
+                    data = {}
+                    data['x'] = x
+                    data['y'] = y
+                    data['prg'] = progress
 
-                            await ws.send_json(data)
-                        await asyncio.sleep(2)
-
-            elif msg.type == WSMsgType.ERROR:
-                logger.info('ws connection closed with exception %s' %
+                    await ws.send_json(data)
+                await asyncio.sleep(2)
+                # break
+        elif msg.type == WSMsgType.close:        
+            logger.info("websocket connection closed by client")
+            # break
+        elif msg.type == WSMsgType.ERROR:
+            logger.info('ws connection closed with exception %s' %
                             ws.exception())
+            # break
+        app["sockets"].remove(ws)
         await ws.close()
         logger.info("self.isPlottingInProgress {}".format(
             self.isPlottingInProgress))
@@ -194,6 +200,7 @@ class WebServer:
         logger.debug("running web app")
         loop = self.loop
         app = loop.run_until_complete(self.create_app())
+        app["sockets"] = []
         web.run_app(app, host=self.host, port=self.port)
 
 

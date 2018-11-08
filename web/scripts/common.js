@@ -94,7 +94,7 @@ const showProgress = () => {
 
     ws.onopen = function () {
         ws.send("Listening for progress");
-        console.log("Message is sent...Listening for progress..");
+        console.log("Message sent...Listening for progress..");
 
         
     };
