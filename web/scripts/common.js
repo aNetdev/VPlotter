@@ -68,6 +68,15 @@ const updateGraph = (scale, xOffset, yOffset) => {
     });
 
     Plotly.newPlot('divGraphCalc', data, layout);
+    
+    var data = {
+        x: [10,20],
+        y: [80,100],
+        mode: 'lines',
+        type: 'scatter',
+        name: 'Progress'
+    };
+    Plotly.newPlot('divGraphProg', [data], layout);
 }
 const onCalcChanged = () => {
     let scale = Number(document.getElementById("scale").value) / 100;
@@ -87,6 +96,14 @@ const showProgress = () => {
         ws.send("Listening for progress");
         console.log("Message is sent...Listening for progress..");
 
+        
+    };
+
+    ws.onmessage = function (evt) {
+        var received_msg = evt.data;       
+        j = JSON.parse(received_msg);
+        
+        console.log(j);
         var layout = {
             xaxis: {
                 range: [15, 350]
@@ -95,35 +112,23 @@ const showProgress = () => {
                 range: [400, 15]
             }
         };
-        var data = {
-            x: [],
-            y: [],
-            mode: 'lines',
-            type: 'scatter',
-            name: 'Path'
-        };
-        Plotly.newPlot('divGraphProg', data, layout);
-    };
 
-    ws.onmessage = function (evt) {
-        var received_msg = evt.data;       
-        j = JSON.parse(received_msg);
-        
-        console.log(j);
-        Plotly.animate('divGraphProg', {
-            data: [{
-                x: j.x,
-                y: j.y
-            }]           
-        }, {
-            transition: {
-                duration: 500,
-                easing: 'cubic-in-out'
-            },
-            frame: {
-                duration: 500
-            }
-        });
+         Plotly.animate('divGraphProg', {
+             data: [{
+                 x: j.x,
+                 y: j.y
+             }],
+             traces: [0],
+             layout:{},           
+         }, {
+             transition: {
+                 duration: 500,
+                 easing: 'cubic-in-out'
+             },
+             frame: {
+                 duration: 500
+             }
+         });
     };
 
     ws.onclose = function () {
