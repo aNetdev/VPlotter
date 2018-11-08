@@ -5,6 +5,7 @@ const input = document.getElementById('fileUpload');
 const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
 const scale = document.getElementById("scale");
+const progressBar = document.getElementsByClassName("progress-bar")[0];
 const drawGraph = (data) => {
 
     sessionStorage.jdataOrg = JSON.stringify(data);
@@ -68,13 +69,17 @@ const updateGraph = (scale, xOffset, yOffset) => {
     });
 
     Plotly.newPlot('divGraphCalc', data, layout);
-    
+
     var data = {
-        x: [10,20],
-        y: [80,100],
+        x: [],
+        y: [],
         mode: 'lines',
         type: 'scatter',
-        name: 'Progress'
+        name: 'Progress',
+        line: {
+            color: 'green'
+        }
+
     };
     Plotly.newPlot('divGraphProg', [data], layout);
 }
@@ -88,47 +93,42 @@ const onCalcChanged = () => {
 const onScaleChange = () => {
     document.getElementById('txtRange').innerText = document.getElementById("scale").value + '%';
 };
-
-const showProgress = () => {
+const updateProgress = (cords, prg) => {
+    progressBar.style.width= prg +'%'
+    progressBar.setAttribute('aria-valuenow', prg);
+    console.log(cords);
+    Plotly.animate('divGraphProg', {
+        data: [{
+            x: cords.x,
+            y: cords.y
+        }],
+        traces: [0],
+        layout: {},
+    }, {
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out'
+            },
+            frame: {
+                duration: 500
+            }
+        });
+};
+const listenForProgress = () => {
     var ws = new WebSocket("ws://" + location.host + "/" + urlProgress);
-
+    cords = { x: [], y: [] };
     ws.onopen = function () {
         ws.send("Listening for progress");
         console.log("Message sent...Listening for progress..");
-
-        
     };
 
     ws.onmessage = function (evt) {
-        var received_msg = evt.data;       
+        var received_msg = evt.data;
         j = JSON.parse(received_msg);
-        
         console.log(j);
-        var layout = {
-            xaxis: {
-                range: [15, 350]
-            },
-            yaxis: {
-                range: [400, 15]
-            }
-        };
-
-         Plotly.animate('divGraphProg', {
-             data: [{
-                 x: j.x,
-                 y: j.y
-             }],
-             traces: [0],
-             layout:{},           
-         }, {
-             transition: {
-                 duration: 500,
-                 easing: 'cubic-in-out'
-             },
-             frame: {
-                 duration: 500
-             }
-         });
+        cords.x = cords.x.concat(j.x)
+        cords.y = cords.y.concat(j.y)
+        updateProgress(cords, j.prg);
     };
 
     ws.onclose = function () {
@@ -156,7 +156,7 @@ const onPlot = () => {
             case "Started":
                 {
                     // message success and start listening for progress
-                    showProgress();
+                    listenForProgress();
                     break;
                 }
             case "InProgress":

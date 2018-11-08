@@ -41,35 +41,85 @@ class WebServer:
         minY = min(cords['y'])
         maxY = max(cords['y'])
 
-        plotter.moveTo(minX, minY, PenDirection.Up)
+        ax =[] #additional cordinates
+        ay =[] #additional cordinates
+        ap =[]
+        
+        #move to orgin, even if we are already there
+        ax.append(orgX)
+        ay.append(orgY)
+        ap.append(0) #PenDirection.Up
+
+        #plotter.moveTo(minX, minY, PenDirection.Up)
+        ax.append(minX)
+        ay.append(minY)
+        ap.append(0) #PenDirection.Up
 
         # top left corner horizontal line
-        plotter.moveTo(minX+10, minY, PenDirection.Down)
-        plotter.moveTo(maxX-10, minY, PenDirection.Up)
+        #plotter.moveTo(minX+10, minY, PenDirection.Down)
+        ax.append(minX+10)
+        ay.append(minY)
+        ap.append(1) #PenDirection.Down
+
+        #plotter.moveTo(maxX-10, minY, PenDirection.Up)
+        ax.append(maxX-10)
+        ay.append(minY)
+        ap.append(0) #PenDirection.up
 
         # top Right
         # top right corner horizontal line
-        plotter.moveTo(maxX, minY, PenDirection.Down)
-        # top right corner vertical line
-        plotter.moveTo(maxX, minY+10, PenDirection.Down)
+        #plotter.moveTo(maxX, minY, PenDirection.Down)
+        ax.append(maxX)
+        ay.append(minY)
+        ap.append(1) 
 
-        plotter.moveTo(maxX, maxY-10, PenDirection.Up)
+        # top right corner vertical line
+        #plotter.moveTo(maxX, minY+10, PenDirection.Down)
+        ax.append(maxX)
+        ay.append(minY+10)
+        ap.append(1) 
+
+        #plotter.moveTo(maxX, maxY-10, PenDirection.Up)
+        ax.append(maxX)
+        ay.append(maxY-10)
+        ap.append(0) 
 
         # bottom Right
         # bottom right corner vertical line
-        plotter.moveTo(maxX, maxY, PenDirection.Down)
+        #plotter.moveTo(maxX, maxY, PenDirection.Down)
+        ax.append(maxX)
+        ay.append(maxY)
+        ap.append(0) 
 
         # bottom right corner horizontal line
-        plotter.moveTo(maxX-10, maxY, PenDirection.Down)
-        plotter.moveTo(minX+10, maxY, PenDirection.Up)
+        #plotter.moveTo(maxX-10, maxY, PenDirection.Down)
+        ax.append(maxX-10)
+        ay.append(maxY)
+        ap.append(1) 
+        #plotter.moveTo(minX+10, maxY, PenDirection.Up)
+        ax.append(minX+10)
+        ay.append(maxY)
+        ap.append(0) 
 
         # bottom left
         # bottom left corner horizontal line
-        plotter.moveTo(minX, maxY, PenDirection.Down)
+        #plotter.moveTo(minX, maxY, PenDirection.Down)
+        ax.append(minX)
+        ay.append(maxY)
+        ap.append(1) 
         # bottom left corner vertical line
-        plotter.moveTo(minX, maxY-10, PenDirection.Down)
+        #plotter.moveTo(minX, maxY-10, PenDirection.Down)
+        ax.append(minX)
+        ay.append(maxY-10)
+        ap.append(1)
 
-        #input("Done with border. Enter to continue")
+        ax.append(minX)
+        ay.append(minY)
+        ap.append(0)
+
+        cords['x'] = ax + cords['x'] 
+        cords['y'] = ay + cords['y'] 
+        cords['p'] = ap + cords['p']       
 
         total = len(cords['x'])
 
@@ -135,21 +185,18 @@ class WebServer:
         app = request.app
         ws = web.WebSocketResponse()
         await ws.prepare(request)
+        logger.info("websocket connection opened")
         app["sockets"].append(ws)
         lastResultIndex = 0
-        # while True: #keep the websocket open
         msg = await ws.receive()
-        if msg.type == WSMsgType.TEXT:               
+        logger.info("websocket message recived")
+        if msg.type == WSMsgType.TEXT:
             # send the results up to the last read
-            while self.isPlottingInProgress:
-                logger.info("self.isPlottingInProgress {}".format(
-                    self.isPlottingInProgress))
+            # lastResultIndex < len(self.progress) means the plot finished and we are out of the loop but we have more data to send
+            while self.isPlottingInProgress or lastResultIndex < (len(self.progress)-1):         
                 l = len(self.progress)
                 x = []
-                y = []
-                logger.info("progress len {}".format(l))
-                logger.info(
-                    "lastResultIndex {}".format(lastResultIndex))
+                y = []               
                 # read the progress array
                 for i in range(lastResultIndex, l-1):
                     lastResultIndex = lastResultIndex + 1
@@ -158,27 +205,22 @@ class WebServer:
 
                 progress = self.progress[l-1][2] if l > 0 else 0
                 logger.info("progress {}".format(progress))
-                
-                if len(x) > 0: #send data only if there is progress 
+
+                if len(x) > 0:  # send data only if there is progress
                     data = {}
                     data['x'] = x
                     data['y'] = y
-                    data['prg'] = progress
-
+                    data['prg'] = round(progress)
                     await ws.send_json(data)
                 await asyncio.sleep(2)
-                # break
-        elif msg.type == WSMsgType.close:        
+
+        elif msg.type == WSMsgType.close:
             logger.info("websocket connection closed by client")
-            # break
         elif msg.type == WSMsgType.ERROR:
             logger.info('ws connection closed with exception %s' %
-                            ws.exception())
-            # break
+                        ws.exception())
         app["sockets"].remove(ws)
-        await ws.close()
-        logger.info("self.isPlottingInProgress {}".format(
-            self.isPlottingInProgress))
+        await ws.close()     
         logger.info("websocket connection closed")
         return ws
 
