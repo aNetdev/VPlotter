@@ -1,6 +1,6 @@
 const urlUpload = 'uploadSVG';
 const urlPlot = 'plot';
-
+const urlProgress = 'progress'
 const input = document.getElementById('fileUpload');
 const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
@@ -80,6 +80,58 @@ const onScaleChange = () => {
     document.getElementById('txtRange').innerText = document.getElementById("scale").value + '%';
 };
 
+const showProgress = () => {
+    var ws = new WebSocket("ws://" + location.host + "/" + urlProgress);
+
+    ws.onopen = function () {
+        ws.send("Listening for progress");
+        console.log("Message is sent...Listening for progress..");
+
+        var layout = {
+            xaxis: {
+                range: [15, 350]
+            },
+            yaxis: {
+                range: [400, 15]
+            }
+        };
+        var data = {
+            x: [],
+            y: [],
+            mode: 'lines',
+            type: 'scatter',
+            name: 'Path'
+        };
+        Plotly.newPlot('divGraphProg', data, layout);
+    };
+
+    ws.onmessage = function (evt) {
+        var received_msg = evt.data;       
+        j = JSON.parse(received_msg);
+        
+        console.log(j);
+        Plotly.animate('divGraphProg', {
+            data: [{
+                x: j.x,
+                y: j.y
+            }]           
+        }, {
+            transition: {
+                duration: 500,
+                easing: 'cubic-in-out'
+            },
+            frame: {
+                duration: 500
+            }
+        });
+    };
+
+    ws.onclose = function () {
+
+        // websocket is closed.
+        console.log("Connection is closed...");
+    };
+}
 const onPlot = () => {
     cords = JSON.parse(sessionStorage.jdataMod);
     orgX = document.getElementById('orgX').value;
@@ -92,13 +144,28 @@ const onPlot = () => {
             orgY: orgY,
             cords: cords
         })
+    }).then(
+        response => response.json()
+    ).then(json => {
+        switch (json.status) {
+            case "Started":
+                {
+                    // message success and start listening for progress
+                    showProgress();
+                    break;
+                }
+            case "InProgress":
+                {
+                    // message another plot is in progress
+                    break;
+                }
+        }
     });
 };
 
-const onSelectFile = () => {    
+const onSelectFile = () => {
     upload(input.files[0]);
 };
-debugger;
 input.addEventListener('change', onSelectFile);
 scale.addEventListener('change', onScaleChange);
 plot.addEventListener('click', onPlot);
