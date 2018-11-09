@@ -5,14 +5,15 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
         crossorigin="anonymous">
 
+    <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU"
+        crossorigin="anonymous">
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"> </script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"> </script> -->
 </head>
 
 <body>
@@ -24,7 +25,9 @@
                 <div class="container float-left">
                     <div class="row">
                         <div class="col">
-                            <input type="file" id="fileUpload">
+                            <span class="control-fileupload">
+                                <input type="file" id="fileUpload">
+                            </span>
                         </div>
                     </div>
                     <div class="row">
@@ -33,7 +36,7 @@
                                 <span class="input-group-text" id="inputGroup-sizing-sm">Scale</span>
                             </div>
                             <input type="range" min="1" max="200" value="50" id="scale" class="form-control" aria-label="Sizing example input"
-                                aria-describedby="inputGroup-sizing-sm">
+                                aria-describedby="inputGroup-sizing-sm" />
                             <span class="input-group-text" id="txtRange"></span>
                         </div>
                     </div>
@@ -43,14 +46,14 @@
                                 <span class="input-group-text" id="inputGroup-sizing-sm">X Offset</span>
                             </div>
                             <input type="number" value="45" id="xOffset" class="form-control" aria-label="Sizing example input"
-                                aria-describedby="inputGroup-sizing-sm">
+                                aria-describedby="inputGroup-sizing-sm" />
                         </div>
                         <div class="input-group input-group-sm mb-3 col">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="inputGroup-sizing-sm">Y Offset</span>
                             </div>
                             <input type="number" value="45" id="yOffset" class="form-control" aria-label="Sizing example input"
-                                aria-describedby="inputGroup-sizing-sm">
+                                aria-describedby="inputGroup-sizing-sm" />
                         </div>
                     </div>
                     <div class="row">
@@ -59,14 +62,14 @@
                                 <span class="input-group-text" id="inputGroup-sizing-sm">X Origin</span>
                             </div>
                             <input type="number" value="100" id="orgX" class="form-control" aria-label="Sizing example input"
-                                aria-describedby="inputGroup-sizing-sm">
+                                aria-describedby="inputGroup-sizing-sm" />
                         </div>
                         <div class="input-group input-group-sm mb-3 col">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="inputGroup-sizing-sm">Y Origin</span>
                             </div>
                             <input type="number" value="70" id="orgY" class="form-control" aria-label="Sizing example input"
-                                aria-describedby="inputGroup-sizing-sm">
+                                aria-describedby="inputGroup-sizing-sm" />
                         </div>
                     </div>
                     <div class="row">
@@ -75,8 +78,30 @@
                         </div>
                     </div>
                 </div>
-
             </div>
+            <!-- <div class="col">
+                <div class="container">
+                    <div class="row ">
+                        <div class="col">
+                            <button type="button" class="btn float-right" data-toggle="collapse" data-target="#settings"> <i class="fa fa-wrench"></i></button>
+                        </div>
+                    </div>
+                    <div id="settings" class="collapse row float-right">
+                        <div class="input-group mb-3 col">                            
+                            <input type="checkbox" id="chkBorder" class="form-check-input" aria-label="Draw Border">
+                            <label class="form-check-label" for="chkBorder">Draw Border</label>
+                        </div>
+                        <div class="input-group input-group-sm mb-3 col">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="inputGroup-sizing-sm">Distance between Spools</span>
+                                </div>
+                                <input type="number" value="360" id="b" class="form-control" aria-label="Sizing example input"
+                                    aria-describedby="inputGroup-sizing-sm"/>
+                            </div>
+                    </div>
+                </div>
+
+            </div> -->
         </div>
         <div class="row">
             <!--for plot area. will have two cols for each graph-->
@@ -97,7 +122,6 @@
             </div>
         </div>
     </div>
-
 
 
     <script src="scripts/common.js"></script>

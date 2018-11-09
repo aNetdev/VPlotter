@@ -176,7 +176,7 @@ class WebServer:
         logger.debug("post_config post")
         txt = await request.text()
         jConfig = json.loads(txt)
-        Config().setConfig(jConfig[0])
+        Config().setConfig(jConfig)
 
         data = Config().getConfig()  # send back the updated data.
         return web.json_response(data)
