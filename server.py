@@ -3,9 +3,7 @@ import json
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
-
-from aiohttp import web, WSMsgType
-
+from aiohttp import WSMsgType, web
 from plotter.config import Config
 from plotter.plotter import PenDirection, Plotter
 from plotter.svgParser import SVGParser
@@ -33,7 +31,7 @@ class WebServer:
         cords = data['cords']
         config = Config().getConfig()
         plotter = Plotter(config, orgX, orgY)
-        plotter.init(True)
+        plotter.init(False)
         plotter.enableSteppers()
         minX = min(cords['x'])
         maxX = max(cords['x'])
