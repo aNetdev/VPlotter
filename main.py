@@ -27,7 +27,4 @@ logger.info("Starting")
 
 s = WebServer(host='0.0.0.0', port=8080)
 s.run_app()
-
-
-
 logger.info("Done")

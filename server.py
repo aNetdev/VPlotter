@@ -39,11 +39,11 @@ class WebServer:
         minY = min(cords['y'])
         maxY = max(cords['y'])
 
-        ax =[] #additional cordinates
-        ay =[] #additional cordinates
+        ax =[] #additional coordinates
+        ay =[] #additional coordinates
         ap =[]
         
-        #move to orgin, even if we are already there
+        #move to origin, even if we are already there
         ax.append(orgX)
         ay.append(orgY)
         ap.append(0) #PenDirection.Up
@@ -128,7 +128,7 @@ class WebServer:
             plotter.moveTo(x, y, pen)
             perComplete = round(index/total * 100, 2)
             self.progress.append((x, y, perComplete))
-            logger.info("Plotting {}%%".format(perComplete))
+            logger.debug("Plotting {}%%".format(perComplete))
         plotter.finalize()
         self.progress.append((plotter.orgX, plotter.orgY, 100))
         logger.info("Done Plotting")
@@ -141,7 +141,7 @@ class WebServer:
 
     async def uploadSVG(self, request):
         logger.debug("uploadSVG Post")
-        svg = await request.content.read()
+        svg = await request.text()
         parser = SVGParser()
         cords = parser.getXYCordsFromSVG(svg)
         jsonData = parser.covertXYToJson(cords)
@@ -156,8 +156,7 @@ class WebServer:
         logger.debug("plot Post")
         result = {}
         if not self.isPlottingInProgress:
-            data = await request.content.read()
-            jData = json.loads(data)
+            jData = await request.json()
             t = self.loop.run_in_executor(self.pool, self.doPlot, jData)
             # t.add_done_callback(self.scrape_callback)
             result['status'] = 'Started'
@@ -172,8 +171,7 @@ class WebServer:
 
     async def post_config(self, request):
         logger.debug("post_config post")
-        txt = await request.text()
-        jConfig = json.loads(txt)
+        jConfig = await request.json()         
         Config().setConfig(jConfig)
 
         data = Config().getConfig()  # send back the updated data.
@@ -187,7 +185,7 @@ class WebServer:
         app["sockets"].append(ws)
         lastResultIndex = 0
         msg = await ws.receive()
-        logger.info("websocket message recived")
+        logger.info("websocket message received")
         if msg.type == WSMsgType.TEXT:
             # send the results up to the last read
             # lastResultIndex < len(self.progress) means the plot finished and we are out of the loop but we have more data to send
