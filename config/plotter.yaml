@@ -1,6 +1,9 @@
 plotter:
   b: 360
-  pins: {leftDirPin: 16, leftEnable: 36, leftPin: 32, penPin: 12, rightDirPin: 22,
-    rightEnable: 38, rightPin: 18}
+  pins: {    
+    leftDirPin: 16, leftEnable: 18, leftStpPin: 22, 
+    penPin: 12, 
+    rightDirPin: 32,rightEnable: 36, rightStpPin: 38    
+    }
   spoolDiameter: 79
   stepsPerRotation: 2048

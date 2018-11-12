@@ -20,13 +20,13 @@ class Plotter:
         self.sd = cRoot['spoolDiameter']#79  # spool diameter 2piR mm
 
         pins = cRoot['pins']
-        self.leftMotorEnable = pins['leftEnable'] #36
-        self.leftMotorPin = pins['leftPin'] #32
-        self.leftMotorDirPin = pins['leftDirPin'] #16
+        self.leftStepperEnable = pins['leftEnable'] #36
+        self.leftStepperStpPin = pins['leftStpPin'] #32
+        self.leftStepperDirPin = pins['leftDirPin'] #16
 
-        self.rightMotorEnable = pins['rightEnable'] #38
-        self.rightMotorPin = pins['rightPin'] #18
-        self.rightMotorDirPin = pins['rightDirPin'] #22
+        self.rightStepperEnable = pins['rightEnable'] #38
+        self.rightStepperStpPin = pins['rightStpPin'] #18
+        self.rightStepperDirPin = pins['rightDirPin'] #22
 
         self.penPin = pins['penPin'] #12  # servo pin PWM
         self.lastPenPos = False
@@ -53,13 +53,13 @@ class Plotter:
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BOARD)  # BOARD pin-numbering scheme
 
-        GPIO.setup(self.leftMotorEnable, GPIO.OUT)
-        GPIO.setup(self.leftMotorPin, GPIO.OUT)
-        GPIO.setup(self.leftMotorDirPin, GPIO.OUT)
+        GPIO.setup(self.leftStepperEnable, GPIO.OUT)
+        GPIO.setup(self.leftStepperStpPin, GPIO.OUT)
+        GPIO.setup(self.leftStepperDirPin, GPIO.OUT)
 
-        GPIO.setup(self.rightMotorEnable, GPIO.OUT)
-        GPIO.setup(self.rightMotorPin, GPIO.OUT)
-        GPIO.setup(self.rightMotorDirPin, GPIO.OUT)
+        GPIO.setup(self.rightStepperEnable, GPIO.OUT)
+        GPIO.setup(self.rightStepperStpPin, GPIO.OUT)
+        GPIO.setup(self.rightStepperDirPin, GPIO.OUT)
 
         GPIO.setup(self.penPin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.penPin, 50)
@@ -140,14 +140,14 @@ class Plotter:
             if a1 >= maxSteps:
                 a1 -= maxSteps
                 # bc.makeStep(0,d1)
-                self.makeOneStep(self.leftMotorPin,
-                                 self.leftMotorDirPin, leftDir)
+                self.makeOneStep(self.leftStepperStpPin,
+                                 self.leftStepperDirPin, leftDir)
             a2 += rightSteps
             if a2 >= maxSteps:
                 a2 -= maxSteps
                 # bc.makeStep(1,d2)
-                self.makeOneStep(self.rightMotorPin,
-                                 self.rightMotorDirPin, rightDir)
+                self.makeOneStep(self.rightStepperStpPin,
+                                 self.rightStepperDirPin, rightDir)
 
         # for i in range(1, maxSteps):
         #     if steppedLeft < leftSteps:  # if steppedLeft > leftSteps we have done our left steps. so dont do anything
@@ -197,26 +197,26 @@ class Plotter:
     def moveRight(self, dir, steps):
         logger.debug("moving right %s steps", steps)
         # set direction
-        GPIO.output(self.rightMotorDirPin, GPIO.LOW if dir ==
+        GPIO.output(self.rightStepperDirPin, GPIO.LOW if dir ==
                     CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
-            GPIO.output(self.rightMotorPin, GPIO.HIGH)
+            GPIO.output(self.rightStepperStpPin, GPIO.HIGH)
             time.sleep(0.01)
             # reset
-            GPIO.output(self.rightMotorPin, GPIO.LOW)
+            GPIO.output(self.rightStepperStpPin, GPIO.LOW)
         logger.debug("done")
 
     def moveLeft(self, dir, steps):
         logger.debug("moving Left %s steps", steps)
         # set direction
-        GPIO.output(self.leftMotorDirPin, GPIO.LOW if dir ==
+        GPIO.output(self.leftStepperDirPin, GPIO.LOW if dir ==
                     CordDirection.Forward else GPIO.HIGH)
         for i in range(1, steps):
-            GPIO.output(self.leftMotorPin, GPIO.HIGH)
+            GPIO.output(self.leftStepperStpPin, GPIO.HIGH)
             if not self.isDebugMode:
                 time.sleep(0.01)
             # reset
-            GPIO.output(self.leftMotorPin, GPIO.LOW)
+            GPIO.output(self.leftStepperStpPin, GPIO.LOW)
         logger.debug("done")
 
     def finalize(self):
@@ -228,17 +228,17 @@ class Plotter:
     def disableSteppers(self):
         logger.debug("disableSteppers")
         # pull high to disable the easy drivers
-        GPIO.output(self.leftMotorEnable, GPIO.HIGH)
+        GPIO.output(self.leftStepperEnable, GPIO.HIGH)
         time.sleep(0.01)
-        GPIO.output(self.rightMotorEnable, GPIO.HIGH)
+        GPIO.output(self.rightStepperEnable, GPIO.HIGH)
         time.sleep(0.01)
 
     def enableSteppers(self):
         logger.debug("enableSteppers")
         # pull low to enable the easy drivers
-        GPIO.output(self.leftMotorEnable, GPIO.LOW)
+        GPIO.output(self.leftStepperEnable, GPIO.LOW)
         time.sleep(0.01)    
-        GPIO.output(self.rightMotorEnable, GPIO.LOW)           
+        GPIO.output(self.rightStepperEnable, GPIO.LOW)           
         time.sleep(0.01)
     
     def cleanup(self):
