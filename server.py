@@ -5,7 +5,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from aiohttp import WSMsgType, web
 from plotter.config import Config
-from plotter.plotter import PenDirection, Plotter
+from plotter.plotter import PenDirection, CordDirection, Plotter
 from plotter.svgParser import SVGParser
 
 logger = logging.getLogger("plotterLog")
@@ -135,6 +135,31 @@ class WebServer:
         self.isPlottingInProgress = False
         return "Complete"
 
+
+    def doStep(self, data):
+        dir=data['dir']
+        steps =int(data['steps'])
+        self.isPlottingInProgress = True        
+        logger.info("Starting to Step")
+        config = Config().getConfig()
+        plotter = Plotter(config, 0, 0)
+        plotter.init(False)
+        plotter.enableSteppers()
+        plotter.movePen(PenDirection.Up)
+        if dir == "leftUp" :
+            plotter.moveLeft( CordDirection.Backward, steps)
+        if dir == "leftDown" :
+            plotter.moveLeft( CordDirection.Forward, steps)
+        if dir == "rightUp" :
+            plotter.moveRight( CordDirection.Backward, steps)
+        if dir == "rightDown" :
+            plotter.moveRight( CordDirection.Forward, steps)
+        self.isPlottingInProgress = False        
+        logger.info("Done Stepping")
+        return 'done'
+
+
+
     async def index(self, request):
         logger.debug("Index request")
         return web.FileResponse(os.path.join(self._webroot, "index.html"))
@@ -158,7 +183,7 @@ class WebServer:
         if not self.isPlottingInProgress:
             jData = await request.json()
             t = self.loop.run_in_executor(self.pool, self.doPlot, jData)
-            # t.add_done_callback(self.scrape_callback)
+            t.add_done_callback(self.scrape_callback)
             result['status'] = 'Started'
         else:
             result['status'] = 'InProgress'
@@ -220,6 +245,18 @@ class WebServer:
         logger.info("websocket connection closed")
         return ws
 
+    async def step(self, request):
+        logger.debug("step Post")
+        result = {}
+        if not self.isPlottingInProgress:
+            jData = await request.json()
+            t = self.loop.run_in_executor(self.pool, self.doStep, jData)
+            t.add_done_callback(self.scrape_callback)
+            result['status'] = 'Started'
+        else:
+            result['status'] = 'InProgress'
+        return web.json_response(result)
+
     async def create_app(self):
         logger.debug("creating web app")
         app = web.Application()
@@ -230,6 +267,7 @@ class WebServer:
             web.get('/config', self.get_config),
             web.post('/config', self.post_config),
             web.get('/progress', self.progress_handler),
+            web.post('/step', self.step),
         ])
         app.router.add_static('/', path=self._webroot, name='static')
         return app

@@ -1,11 +1,13 @@
 const urlUpload = 'uploadSVG';
 const urlPlot = 'plot';
-const urlProgress = 'progress'
+const urlProgress = 'progress';
+const urlStep ='step';
 const input = document.getElementById('fileUpload');
 const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
 const scale = document.getElementById("scale");
 const progressBar = document.getElementsByClassName("progress-bar")[0];
+const dirDiv = document.getElementById("dirBtns");
 const drawGraph = (data) => {
 
     sessionStorage.jdataOrg = JSON.stringify(data);
@@ -94,7 +96,7 @@ const onScaleChange = () => {
     document.getElementById('txtRange').innerText = document.getElementById("scale").value + '%';
 };
 const updateProgress = (cords, prg) => {
-    progressBar.style.width= prg +'%'
+    progressBar.style.width = prg + '%'
     progressBar.setAttribute('aria-valuenow', prg);
     console.log(cords);
     Plotly.animate('divGraphProg', {
@@ -105,18 +107,21 @@ const updateProgress = (cords, prg) => {
         traces: [0],
         layout: {},
     }, {
-            transition: {
-                duration: 500,
-                easing: 'cubic-in-out'
-            },
-            frame: {
-                duration: 500
-            }
-        });
+        transition: {
+            duration: 500,
+            easing: 'cubic-in-out'
+        },
+        frame: {
+            duration: 500
+        }
+    });
 };
 const listenForProgress = () => {
     var ws = new WebSocket("ws://" + location.host + "/" + urlProgress);
-    cords = { x: [], y: [] };
+    cords = {
+        x: [],
+        y: []
+    };
     ws.onopen = function () {
         ws.send("Listening for progress");
         console.log("Message sent...Listening for progress..");
@@ -167,7 +172,21 @@ const onPlot = () => {
         }
     });
 };
+const onStep=(dir,steps)=>{
 
+    fetch(urlStep, {
+        method: "POST",
+        body: JSON.stringify({
+            dir: dir,
+            steps: steps
+        })
+    }).then(
+        response => response.json()
+    ).then(json => {
+       
+    });
+    
+}
 const onSelectFile = () => {
     upload(input.files[0]);
 };
@@ -177,4 +196,16 @@ plot.addEventListener('click', onPlot);
 Array.from(calcCtrls).forEach(element => {
     element.addEventListener('change', onCalcChanged);
 });
+dirDiv.addEventListener('click', (e) => {
+    var btn
+    if (e.target.tagName == 'BUTTON') {
+        btn = e.target;
+    } else if (e.target.parentNode && e.target.parentNode.tagName == 'BUTTON') {
+        btn = e.target.parentNode;
+    }
+    var dir = btn.getAttribute("data");
+    var steps = document.getElementById('txtSteps').value;
+    onStep(dir,steps );
+});
+
 onScaleChange();
