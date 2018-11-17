@@ -125,9 +125,9 @@ class WebServer:
             x = int(cords['x'][index])
             y = int(cords['y'][index])
             pen = PenDirection.Down if cords['p'][index] == 0 else PenDirection.Up
-            plotter.moveTo(x, y, pen)
             perComplete = round(index/total * 100, 2)
             self.progress.append((x, y, perComplete))
+            plotter.moveTo(x, y, pen)            
             logger.debug("Plotting {}%%".format(perComplete))
         plotter.finalize()
         self.progress.append((plotter.orgX, plotter.orgY, 100))
