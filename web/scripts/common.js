@@ -1,13 +1,16 @@
 const urlUpload = 'uploadSVG';
 const urlPlot = 'plot';
 const urlProgress = 'progress';
-const urlStep ='step';
+const urlStep = 'step';
+const urlMoveTo = 'moveTo';
+
 const input = document.getElementById('fileUpload');
 const plot = document.getElementById('btnPlot');
 const calcCtrls = document.getElementById('divCalcCtrl').getElementsByTagName("input");
 const scale = document.getElementById("scale");
 const progressBar = document.getElementsByClassName("progress-bar")[0];
 const dirDiv = document.getElementById("dirBtns");
+const moveTo = document.getElementById("btnMove");
 const drawGraph = (data) => {
 
     sessionStorage.jdataOrg = JSON.stringify(data);
@@ -172,7 +175,7 @@ const onPlot = () => {
         }
     });
 };
-const onStep=(dir,steps)=>{
+const onStep = (dir, steps) => {
 
     fetch(urlStep, {
         method: "POST",
@@ -183,10 +186,40 @@ const onStep=(dir,steps)=>{
     }).then(
         response => response.json()
     ).then(json => {
-       
+
     });
-    
+
 }
+
+const onMoveTo = () => {
+    var orgX = Number(document.getElementById("orgX").value);
+    var orgY = Number(document.getElementById("orgY").value);
+
+    var curX = Number(document.getElementById("fromX").value);
+    var curY = Number(document.getElementById("fromY").value);
+
+    var moveX = Number(document.getElementById("moveX").value);
+    var moveY = Number(document.getElementById("moveY").value);
+    
+    var pen = Number(document.getElementById("selPen").value);
+
+    fetch(urlMoveTo, {
+        method: "POST",
+        body: JSON.stringify({
+            fromX: orgX ? orgX : curX,
+            fromY: orgY ? orgY : curY,
+            toX: moveX,
+            toY: moveY,
+            pen: pen
+        })
+    }).then(() => {
+            document.getElementById("fromX").value = moveX;
+            document.getElementById("fromY").value = moveY;
+        }
+    );
+
+}
+
 const onSelectFile = () => {
     upload(input.files[0]);
 };
@@ -205,7 +238,9 @@ dirDiv.addEventListener('click', (e) => {
     }
     var dir = btn.getAttribute("data");
     var steps = document.getElementById('txtSteps').value;
-    onStep(dir,steps );
+    onStep(dir, steps);
 });
+
+moveTo.addEventListener("click", onMoveTo);
 
 onScaleChange();
